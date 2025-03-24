@@ -3,12 +3,12 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /app
 
 # Copy the project files and restore dependencies
-COPY *.csproj ./
+COPY LoveLetter.Api/LoveLetter.Api.csproj ./
 RUN dotnet restore
 
 # Copy the entire source code and build the application
 COPY . ./
-RUN dotnet publish -c Release -o /out
+RUN dotnet publish LoveLetter.Api/LoveLetter.Api.csproj -c Release -o /out
 
 # Use a lightweight runtime image to run the application
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime

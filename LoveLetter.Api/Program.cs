@@ -1,3 +1,4 @@
+using LoveLetter.Api.Data;
 using LoveLetter.Api.Hubs;
 using LoveLetter.Api.Services;
 using LoveLetter.Common;
@@ -22,6 +23,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.MapGet("/lobbies", () => InMemoryData.Lobbies.Values.Select(l => l.ToLobbyDto).ToList());
 app.MapHub<LobbyHub>("/lobbyhub");
 app.MapHub<GameHub>("/gamehub");
 app.Run();

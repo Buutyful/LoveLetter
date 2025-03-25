@@ -5,10 +5,11 @@ using LoveLetter.GameCore;
 using Microsoft.AspNetCore.SignalR;
 using static LoveLetter.Api.Data.Models.Lobby;
 
+
 namespace LoveLetter.Api.Hubs;
 
 public record User(string ConnectionId, string UserName);
-public record ActionRequest<T>(Guid Id, TaskCompletionSource<T> PendingRequest);
+
 public interface IGameHubClient
 {
     Task<Card[]> OnCardSelectionRequested(Guid requestId, int cardNumber, Card[] availableCards);
@@ -55,20 +56,20 @@ public class GameHub(IGameService gameService) : Hub<IGameHubClient>
         _ = game.Run();
     }
 
-    public Task SubmitCardSelection(Guid requestId, Card[] selectedCards)
+    public Task SubmitCardSelection(Guid requestId, Card[] cards)
     {
-        var connectionId = Context.ConnectionId;
+        var connId = Context.ConnectionId;
+        if (!InMemoryData.PendingRequests.TryGetValue(connId, out var pending))
+            throw new InvalidOperationException("not found pending request");
 
-        if (!InMemoryData.PendingCardsSelection.TryGetValue(connectionId, out var pendingAction) ||
-            pendingAction.Id != requestId)
-        {
-            throw new InvalidOperationException("No pending action found");
-        }
+        if (pending.Id != requestId || pending is not CardSelectionRequest req)
+            throw new InvalidOperationException("bad request");
 
-        pendingAction.PendingRequest.SetResult(selectedCards);
-        InMemoryData.PendingCardsSelection.TryRemove(connectionId, out _);
+        req.PendingTask.TrySetResult(cards);
 
         return Task.CompletedTask;
     }
+
+ 
 }
 

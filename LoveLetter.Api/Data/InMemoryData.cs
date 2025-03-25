@@ -10,8 +10,7 @@ public static class InMemoryData
     public static readonly ConcurrentDictionary<Guid, Lobby> Lobbies = [];
     public static readonly ConcurrentDictionary<string, User> ConnectedPlayers = [];
     public static readonly ConcurrentDictionary<Guid, Game> ActiveGames = new();
-    public static readonly ConcurrentDictionary<string, ActionRequest<Card[]>> PendingCardsSelection = new();
-
+    public static readonly ConcurrentDictionary<string, PendingRequests> PendingRequests = new();
 
 }
 

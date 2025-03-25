@@ -53,9 +53,10 @@ public class Round
         {
             if (!Deck.IsEmpty)
                 CurrentPlayer.Draw(Deck.Draw());
-            var actionParams = await Game.GameService.GetPlayerAction(CurrentPlayer.Id, [.. CurrentPlayer.Hand]);
-            var playedCard = CurrentPlayer.Play(actionParams.CardPlayed);
-            await playedCard.Use(new GameContext(Game, CurrentPlayer), actionParams);
+            //TODO: handle player action
+            //var actionParams = await Game.GameService.GetPlayerAction(CurrentPlayer.Id, [.. CurrentPlayer.Hand]);
+            //var playedCard = CurrentPlayer.Play(actionParams.CardPlayed);
+            //await playedCard.Use(new GameContext(Game, CurrentPlayer), actionParams);
             NextPlayer();
         }
         //TODO: handle round end

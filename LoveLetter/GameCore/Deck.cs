@@ -6,6 +6,7 @@ public class Deck
     private readonly Queue<Card> _deckCards;
     public Card DiscardedCard { get; private set; }
     public DeckType Type { get; }
+    public bool IsEmpty => _deckCards.Count == 0;
 
     public Deck(DeckType deckType = DeckType.Classic)
     {
@@ -33,7 +34,7 @@ public class Deck
                 .Select(n => new Card(type));
     }
 
-    public IEnumerable<Card> Draw() => DrawMany(1);
+    public Card Draw() => DrawMany(1).First();
     public IEnumerable<Card> DrawMany(int amount)
     {
         while (_deckCards.Count > 0 && amount > 0)

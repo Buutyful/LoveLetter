@@ -47,12 +47,12 @@ public class GameHub(IGameService gameService) : Hub<IGameHubClient>
         if (!InMemoryData.ActiveGames.TryAdd(game.Id, game))
             throw new InvalidOperationException("Game already exists");
 
-        _ = game.Run();
-
         var groupTasks = game.Players.Select(player =>
             Groups.AddToGroupAsync(player.Id, game.Id.ToString()));
 
         await Task.WhenAll(groupTasks);
+
+        _ = game.Run();
     }
 
     public Task SubmitCardSelection(Guid requestId, Card[] selectedCards)

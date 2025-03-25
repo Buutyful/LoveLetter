@@ -1,6 +1,6 @@
 ﻿namespace LoveLetter.GameCore;
 
-public class Player(string id, string name)
+public class Player(string id, string name) : IEquatable<Player>
 {
     private readonly List<Card> _hand = [];
     public string Id { get; } = id;
@@ -16,11 +16,13 @@ public class Player(string id, string name)
         IsAlive = false;
         Discard();
     }
-    public void Play(Card card)
+    public Card Play(CardType card)
     {
-        if (_hand.Any(x => x == card))
-            throw new InvalidOperationException();
-        _hand.Remove(card);        
+        var index = _hand.IndexOf(new Card(card));
+        if (index < 0)
+            throw new InvalidOperationException("Card not found");
+        return DiscardAt(index);
+       
     }
     public void Draw(params IEnumerable<Card> cards) => _hand.AddRange(cards);
     public void Discard() => DiscardAt(0);
@@ -55,4 +57,10 @@ public class Player(string id, string name)
     public void RemoveCards(params Card[] cards) => Array.ForEach(cards, Remove);
     private void Remove(Card card) => _hand.Remove(card);
 
+    public bool Equals(Player? other) => other is not null && Id == other.Id;
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Id);
+    }
 }

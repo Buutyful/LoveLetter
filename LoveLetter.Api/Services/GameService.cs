@@ -10,6 +10,17 @@ public class GameService(IHubContext<GameHub, IGameHubClient> hubContext) : IGam
 {
     private readonly IHubContext<GameHub, IGameHubClient> _hubContext = hubContext;
 
+    public Task<ActionParameters> GetPlayerAction(string connectionId, Card[] availableCards)
+    {
+        var requestId = Guid.NewGuid();
+        var completionSource = new TaskCompletionSource<Card[]>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var pendingCards = InMemoryData.PendingCardsSelection;
+        if (pendingCards.ContainsKey(connectionId))
+        {
+            throw new InvalidOperationException("a request is already pending");
+        }
+    }
+
     // ask the player to select a card
     public async Task<Card[]> RequestCardSelection(string connectionId, int numberOfCards, Card[] availableCards)
     {

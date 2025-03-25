@@ -7,10 +7,11 @@ public class Game
 
     public const int MIN_PLAYERS = 2;
     public const int MAX_PLAYERS = 6;
+    private readonly List<Player> _players = [];
     public Guid Id { get; }
     public IGameService GameService { get; }
     public List<IEvent> EventsHistory { get; } = [];
-    public List<Player> Players { get; } = [];
+    public IReadOnlyList<Player> Players => _players.AsReadOnly();
     public Round CurrentRound { get; private set; }
     public Deck Deck => CurrentRound.Deck;
 
@@ -19,11 +20,11 @@ public class Game
         Id = Guid.NewGuid();
         GameService = gameService;
         CurrentRound = new Round(this);
-        Players = players;
+        _players = new List<Player>(players);
     }
     public async Task Run()
     {
-        while (!Players.Any(p => p.Score < 3))
+        while(Players.All(p => p.Score < 3))
         {
             await CurrentRound.Run();
             CurrentRound = new Round(this);
@@ -34,6 +35,7 @@ public class Game
 
 public class Round
 {
+    private static readonly Random _random = new();
     private int _currentPlayer;
     private Player CurrentPlayer => Game.Players[_currentPlayer];
     public Deck Deck { get; }
@@ -47,9 +49,10 @@ public class Round
     }
     public async Task Run()
     {
-        while (Game.Players.Any(p => p.IsAlive) && !Deck.IsEmpty)
+        while (Game.Players.Count(p => p.IsAlive) > 1)
         {
-            CurrentPlayer.Draw(Deck.Draw());
+            if (!Deck.IsEmpty)
+                CurrentPlayer.Draw(Deck.Draw());
             var actionParams = await Game.GameService.GetPlayerAction(CurrentPlayer.Id, [.. CurrentPlayer.Hand]);
             var playedCard = CurrentPlayer.Play(actionParams.CardPlayed);
             await playedCard.Use(new GameContext(Game, CurrentPlayer), actionParams);
@@ -61,13 +64,16 @@ public class Round
     {
         var maxScore = Game.Players.Max(p => p.Score);
         _currentPlayer = maxScore > 0 ?
-            Game.Players.FindIndex(p => p.Score == maxScore) :
-            new Random().Next(0, Game.Players.Count);
+            Game.Players.ToList().FindIndex(p => p.Score == maxScore) :
+            _random.Next(0, Game.Players.Count);
     }
     private void SetUpRound()
     {
-        Game.Players.ForEach(p => p.ResetState());
-        Game.Players.ForEach(p => p.Draw(Deck.Draw()));
+        foreach (var player in Game.Players)
+        {
+            player.ResetState();
+            player.Draw(Deck.Draw());
+        }
     }
     private void NextPlayer()
     {
@@ -81,8 +87,8 @@ public class Round
             count++;
             _currentPlayer = (_currentPlayer + 1) % Game.Players.Count;
         }
-        if (count > max)
-            throw new InvalidOperationException("No players left");
+        if (count >= max)
+            throw new InvalidOperationException("No living players");
     }
 
 }

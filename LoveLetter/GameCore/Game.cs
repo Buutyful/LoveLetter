@@ -20,7 +20,7 @@ public class Game
         Id = Guid.NewGuid();
         GameService = gameService;
         CurrentRound = new Round(this);
-        _players = new List<Player>(players);
+        _players = [.. players];
     }
     public async Task Run()
     {
@@ -53,10 +53,10 @@ public class Round
         {
             if (!Deck.IsEmpty)
                 CurrentPlayer.Draw(Deck.Draw());
-            //TODO: handle player action
-            //var actionParams = await Game.GameService.GetPlayerAction(CurrentPlayer.Id, [.. CurrentPlayer.Hand]);
-            //var playedCard = CurrentPlayer.Play(actionParams.CardPlayed);
-            //await playedCard.Use(new GameContext(Game, CurrentPlayer), actionParams);
+            //TODO: handle player not responding
+            var actionParams = await Game.GameService.GetPlayerAction(CurrentPlayer.Id, [.. CurrentPlayer.Hand]);
+            var playedCard = CurrentPlayer.Play(actionParams.CardPlayed);
+            await playedCard.Use(new GameContext(Game, CurrentPlayer), actionParams);
             NextPlayer();
         }
         //TODO: handle round end

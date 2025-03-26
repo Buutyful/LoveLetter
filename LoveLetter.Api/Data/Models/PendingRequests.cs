@@ -8,3 +8,7 @@ public record CardSelectionRequest(
     int CardsToSelect,
     TaskCompletionSource<Card[]> PendingTask,
     CancellationTokenSource Cts) : PendingRequests(Id);
+public record CardPlayRequest(
+    Guid Id,
+    TaskCompletionSource<ActionParameters> PendingTask,
+    CancellationTokenSource Cts) : PendingRequests(Id);

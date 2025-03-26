@@ -13,7 +13,7 @@ public class GameService(IHubContext<GameHub, IGameHubClient> hub) : IGameServic
     {
         var requestId = Guid.NewGuid();
         var tcs = new TaskCompletionSource<Card[]>(TaskCreationOptions.RunContinuationsAsynchronously);
-        using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(1));        
+        using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
 
         InMemoryData.PendingRequests[connId] = new CardSelectionRequest(requestId, count, tcs, cts);
 
@@ -22,18 +22,18 @@ public class GameService(IHubContext<GameHub, IGameHubClient> hub) : IGameServic
         return await WaitWithCleanup(tcs, connId, cts.Token);
     }
 
-    //public async Task<Player> RequestPlayerTarget(string connId, Player[] available)
-    //{
-    //    var requestId = Guid.NewGuid();
-    //    var tcs = new TaskCompletionSource<Player>();
-    //    using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
+    public async Task<ActionParameters> GetPlayerAction(string connId, Card[] available)
+    {
+        var requestId = Guid.NewGuid();
+        var tcs = new TaskCompletionSource<ActionParameters>(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(2));
 
-    //    InMemoryData.PendingRequests[connId] = (requestId, tcs, cts, typeof(Player));
+        InMemoryData.PendingRequests[connId] = new CardPlayRequest(requestId, tcs, cts);
 
-    //    await hub.Clients.Client(connId).RequestPlayerTarget(requestId, available);
+        await hub.Clients.Client(connId).OnCardPlayRequested(requestId, available);
 
-    //    return await WaitWithCleanup(tcs, connId, cts.Token);
-    //}
+        return await WaitWithCleanup(tcs, connId, cts.Token);
+    }
 
     private static async Task<T> WaitWithCleanup<T>(TaskCompletionSource<T> tcs, string connId, CancellationToken ct)
     {
@@ -45,7 +45,8 @@ public class GameService(IHubContext<GameHub, IGameHubClient> hub) : IGameServic
         {
             InMemoryData.PendingRequests.TryRemove(connId, out _);
         }
+        //TODO: handle case user dont respond
     }
 
-  
+
 }

@@ -12,7 +12,8 @@ public record User(string ConnectionId, string UserName);
 
 public interface IGameHubClient
 {
-    Task<Card[]> OnCardSelectionRequested(Guid requestId, int cardNumber, Card[] availableCards);
+    Task OnCardSelectionRequested(Guid requestId, int cardNumber, Card[] availableCards);
+    Task OnCardPlayRequested(Guid requestId, Card[] availableCards);
 }
 public class GameHub(IGameService gameService) : Hub<IGameHubClient>
 {
@@ -42,8 +43,8 @@ public class GameHub(IGameService gameService) : Hub<IGameHubClient>
         if (lobby.Owner != user)
             throw new InvalidOperationException("Only the owner can start the game");
 
-        var game = new Game(lobby.Users.Select(u =>
-            new Player(u.ConnectionId, u.UserName)).ToList(), _gameService);
+        var game = new Game([.. lobby.Users.Select(u =>
+            new Player(u.ConnectionId, u.UserName))], _gameService);
 
         if (!InMemoryData.ActiveGames.TryAdd(game.Id, game))
             throw new InvalidOperationException("Game already exists");
@@ -69,7 +70,18 @@ public class GameHub(IGameService gameService) : Hub<IGameHubClient>
 
         return Task.CompletedTask;
     }
+    public Task SubmitGameAction(Guid requestId, ActionParameters parameters)
+    {
 
+        var connId = Context.ConnectionId;
+        if (!InMemoryData.PendingRequests.TryGetValue(connId, out var pending))
+            throw new InvalidOperationException("not found pending request");
+        if (pending.Id != requestId || pending is not CardPlayRequest req)
+            throw new InvalidOperationException("bad request");
+
+        req.PendingTask.TrySetResult(parameters);
+        return Task.CompletedTask;
+    }
  
 }
 

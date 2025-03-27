@@ -16,24 +16,15 @@ public class Player(string id, string name) : IEquatable<Player>
         IsAlive = false;
         Discard();
     }
-    public Card Play(CardType card)
+    public Card Play(Card card)
     {
-        var index = _hand.IndexOf(new Card(card));
+        var index = _hand.IndexOf(card);
         if (index < 0)
             throw new InvalidOperationException("Card not found");
-        return DiscardAt(index);
-       
+        return DiscardAt(index);       
     }
     public void Draw(params IEnumerable<Card> cards) => _hand.AddRange(cards);
-    public void Discard() => DiscardAt(0);
     public void RemoveTurnEffects() => RemoveEffectsByDuration(Duration.Turn);
-    public void ResetState()
-    {
-        _hand.Clear();
-        ActiveEffects.Clear();
-        PlayedCards.Clear();
-        OpponentInfo.Clear();
-    }
     private void RemoveEffectsByDuration(Duration duration)
     {
         var index = 0;
@@ -47,6 +38,27 @@ public class Player(string id, string name) : IEquatable<Player>
         }
         ActiveEffects.RemoveRange(index, (ActiveEffects.Count - 1) - index);
     }
+    public void RemoveCards(params Card[] cards) => Array.ForEach(cards, Remove);
+    private void Remove(Card card) => _hand.Remove(card);
+    public void ResetState()
+    {
+        _hand.Clear();
+        ActiveEffects.Clear();
+        PlayedCards.Clear();
+        OpponentInfo.Clear();
+    }
+
+    public void DiscardMany(params IEnumerable<Card> cards)
+    {
+        foreach (var card in cards)
+        {
+            var index = _hand.IndexOf(card);
+            if (index < 0)
+                throw new InvalidOperationException("Card not found");
+            DiscardAt(index);
+        }
+    }
+    public void Discard() => DiscardAt(0);
     private Card DiscardAt(int index)
     {
         var card = _hand[index];
@@ -54,13 +66,20 @@ public class Player(string id, string name) : IEquatable<Player>
         PlayedCards.Add(card);
         return card;
     }
-    public void RemoveCards(params Card[] cards) => Array.ForEach(cards, Remove);
-    private void Remove(Card card) => _hand.Remove(card);
-
+    public bool MustPlayCountess() => 
+        _hand.Any(x => x.Type == CardType.Countess) &&
+        _hand.Any(c => c.Type == CardType.Prince || c.Type == CardType.King);
+    public bool IsProtected() => ActiveEffects.Any(x => x.CardType == CardType.HandMaid);
     public bool Equals(Player? other) => other is not null && Id == other.Id;
 
     public override int GetHashCode()
     {
         return HashCode.Combine(Id);
+    }
+
+    public void SetHand(List<Card> cards)
+    {
+        _hand.Clear();
+        _hand.AddRange(cards);
     }
 }

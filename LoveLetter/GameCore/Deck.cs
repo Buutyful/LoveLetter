@@ -1,12 +1,14 @@
-﻿namespace LoveLetter.GameCore;
+﻿using System.Collections.Concurrent;
+
+namespace LoveLetter.GameCore;
 
 public class Deck
 {
 
-    private readonly Queue<Card> _deckCards;
+    private readonly ConcurrentQueue<Card> _deckCards;
     public Card DiscardedCard { get; private set; }
     public DeckType Type { get; }
-    public bool IsEmpty => _deckCards.Count == 0;
+    public bool IsEmpty => _deckCards.IsEmpty;
 
     public Deck(DeckType deckType = DeckType.Classic)
     {
@@ -15,7 +17,7 @@ public class Deck
     }
 
 
-    private static (Queue<Card>, Card) NewDeck(DeckType deckType)
+    private static (ConcurrentQueue<Card>, Card) NewDeck(DeckType deckType)
     {
         var random = new Random();
         var specs = DeckConfiguration.GetDeckSpecs(deckType);
@@ -23,11 +25,11 @@ public class Deck
 
         var shuffledDeck = newDeck.OrderBy(_ => random.Next());
 
-        var deck = new Queue<Card>(shuffledDeck);
+        var deck = new ConcurrentQueue<Card>(shuffledDeck);
 
-        var discarded = deck.Dequeue();
+        deck.TryDequeue(out var discarded);
 
-        return (deck, discarded);
+        return (deck, discarded!);
 
         IEnumerable<Card> CreateCardAmount(CardType type) =>
             Enumerable.Range(0, specs[type])
@@ -37,15 +39,28 @@ public class Deck
     public Card Draw() => DrawMany(1).First();
     public IEnumerable<Card> DrawMany(int amount)
     {
-        while (_deckCards.Count > 0 && amount > 0)
+        int drawnCount = 0;
+
+        while (drawnCount < amount && _deckCards.TryDequeue(out var card))
         {
-            yield return _deckCards.Dequeue();
-            amount--;
+            yield return card;
+            drawnCount++;
         }
     }
     public void PutCardsOnBottom(params List<Card> cards)
     {
         foreach (var card in cards) _deckCards.Enqueue(card);
+    }
+    public void Shuffle()
+    {
+        var random = new Random();
+        var currentCards = _deckCards.ToList();
+        var shuffledList = currentCards.OrderBy(_ => random.Next()).ToList();
+        while (_deckCards.TryDequeue(out _)) { }
+        foreach (var card in shuffledList)
+        {
+            _deckCards.Enqueue(card);
+        }
     }
 }
 
@@ -66,8 +81,8 @@ public static class DeckConfiguration
     private static Dictionary<CardType, int> ClassicDeck => new()
     {
         [CardType.Princess] = 1,
-        [CardType.Contess] = 1,
-        [CardType.King] = 1,        
+        [CardType.Countess] = 1,
+        [CardType.King] = 1,
         [CardType.Prince] = 2,
         [CardType.HandMaid] = 2,
         [CardType.Baron] = 2,

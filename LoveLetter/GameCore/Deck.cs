@@ -65,13 +65,13 @@ public static class DeckConfiguration
 
     private static Dictionary<CardType, int> ClassicDeck => new()
     {
-        [CardType.Principessa] = 1,
-        [CardType.Contessa] = 1,
-        [CardType.Re] = 1,        
-        [CardType.Principe] = 2,
-        [CardType.Serva] = 2,
-        [CardType.Barone] = 2,
-        [CardType.Prete] = 2,
-        [CardType.Guardia] = 5
+        [CardType.Princess] = 1,
+        [CardType.Contess] = 1,
+        [CardType.King] = 1,        
+        [CardType.Prince] = 2,
+        [CardType.HandMaid] = 2,
+        [CardType.Baron] = 2,
+        [CardType.Priest] = 2,
+        [CardType.Guard] = 5
     };
 }

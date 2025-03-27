@@ -2,6 +2,7 @@
 public interface IEvent
 {
     Guid GameId { get; }
+    DateTime Date { get; }
 };
 
 public delegate Task EventHandler<T>(T @event) where T : IEvent;

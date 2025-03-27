@@ -9,16 +9,16 @@ public enum Duration
 
 public enum CardType
 {
-    Spia = 0,
-    Guardia,
-    Prete,
-    Barone,
-    Serva,
-    Principe,
-    Cancelliere,
-    Re,
-    Contessa,
-    Principessa
+    Spy = 0,
+    Guard,
+    Priest,
+    Baron,
+    HandMaid,
+    Prince,
+    Chancellor,
+    King,
+    Contess,
+    Princess
 }
 public record Card(CardType Type) : IComparable<Card>
 {
@@ -31,13 +31,13 @@ public static class CardEffects
 {
     private static readonly Dictionary<CardType, Func<GameContext, ActionParameters, ValueTask>> Handlers = new()
     {
-        [CardType.Spia] = HandleSpia,
-        [CardType.Guardia] = HandleGuardia,
-        [CardType.Prete] = HandlePrete,
-        [CardType.Barone] = HandleBarone,
-        [CardType.Serva] = HandleServa,
-        [CardType.Principe] = HandlePrincipe,
-        [CardType.Cancelliere] = HandleCancelliere
+        [CardType.Spy] = HandleSpia,
+        [CardType.Guard] = HandleGuardia,
+        [CardType.Priest] = HandlePrete,
+        [CardType.Baron] = HandleBarone,
+        [CardType.HandMaid] = HandleServa,
+        [CardType.Prince] = HandlePrincipe,
+        [CardType.Chancellor] = HandleCancelliere
     };
 
     public static ValueTask Use(this Card card, GameContext context, ActionParameters parameters)
@@ -52,7 +52,7 @@ public static class CardEffects
     }
     private static ValueTask HandleSpia(GameContext context, ActionParameters _)
     {
-        context.Source.ActiveEffects.Add(new Effect(CardType.Spia, Duration.Round, new PlainText("")));
+        context.Source.ActiveEffects.Add(new Effect(CardType.Spy, Duration.Round, new PlainText("")));
         return ValueTask.CompletedTask;
     }
     private static ValueTask HandleGuardia(GameContext context, ActionParameters parameters)
@@ -96,7 +96,7 @@ public static class CardEffects
     }
     private static ValueTask HandleServa(GameContext context, ActionParameters _)
     {
-        context.Source.ActiveEffects.Add(new Effect(CardType.Serva, Duration.Turn, new PlainText("")));
+        context.Source.ActiveEffects.Add(new Effect(CardType.HandMaid, Duration.Turn, new PlainText("")));
         return ValueTask.CompletedTask;
     }
     private static ValueTask HandlePrincipe(GameContext context, ActionParameters parameters)

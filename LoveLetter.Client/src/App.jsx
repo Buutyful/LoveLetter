@@ -3,7 +3,7 @@ import * as signalR from "@microsoft/signalr";
 import './App.css';
 
 // --- Configuration ---
-// Base URL of your ASP.NET Core backend
+// Base URL
 const backendBaseUrl = "http://localhost:5000"; 
 const lobbyHubUrl = `${backendBaseUrl}/lobbyhub`;
 const lobbiesApiUrl = `${backendBaseUrl}/lobbies`; // For initial fetch
@@ -50,11 +50,11 @@ function App() {
             if (connectionRef.current?.connectionId === user.connectionId) {
                 setCurrentUser(user);
             }
-            // You might also want to update lobby host names if applicable
+            //update lobby host names if applicable
             setLobbies(prevLobbies => prevLobbies.map(lobby =>
-                lobby.host?.connectionId === user.connectionId // Assuming LobbyDto has host object with connectionId
+                lobby.host?.connectionId === user.connectionId
                     ? { ...lobby, host: { ...lobby.host, userName: user.userName } } // Update host name
-                    : lobby.hostName === user.userName // Or if only hostName string is available - less reliable
+                    : lobby.hostName === user.userName 
                         ? { ...lobby, hostName: user.userName }
                         : lobby
             ));
@@ -105,17 +105,14 @@ function App() {
         connection.on("OnUserConnected", handleUserConnected);
         connection.on("OnUserNameSet", handleUserNameSet);
 
-        // Add other handlers as needed (OnUserJoined, OnUserLeft, OnUserDisconnected)
-        // Example: Update user count if LobbyDto has it
-        connection.on("OnUserJoined", (user, lobbyId) => { // Assuming server sends lobbyId too - NOTE: Your C# doesn't!
+       
+        connection.on("OnUserJoined", (user, lobbyId) => { 
             console.log(`${user.userName} joined lobby ${lobbyId}`);
-            // If your LobbyDto includes userCount, you'd update it here:
-            // setLobbies(prev => prev.map(l => l.id === lobbyId ? { ...l, userCount: (l.userCount || 1) + 1 } : l));
+           
         });
-        connection.on("OnUserLeft", (user, lobbyId) => { // Assuming server sends lobbyId too - NOTE: Your C# doesn't!
+        connection.on("OnUserLeft", (user, lobbyId) => { 
             console.log(`${user.userName} left lobby ${lobbyId}`);
-            // If your LobbyDto includes userCount, you'd update it here:
-            // setLobbies(prev => prev.map(l => l.id === lobbyId ? { ...l, userCount: Math.max(0, (l.userCount || 0) - 1) } : l));
+            
         });
         connection.on("OnUserDisconnected", (user) => {
             console.log("User disconnected:", user);

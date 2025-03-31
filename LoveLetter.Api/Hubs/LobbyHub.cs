@@ -8,8 +8,8 @@ public interface ILobbyHubClient
 {
     Task OnUserConnected(User user);
     Task OnUserDisconnected(User user);
-    Task OnUserJoined(User user);
-    Task OnUserLeft(User user);
+    Task OnUserJoined(User user, Guid lobbyId);
+    Task OnUserLeft(User user, Guid lobbyId);
     Task OnNewLobby(LobbyDto lobby);
     Task OnUserNameSet(User user);
 }
@@ -45,7 +45,7 @@ public class LobbyHub : Hub<ILobbyHubClient>
             foreach (var lobby in affectedLobbies)
             {
                 lobby.RemoveUser(user);
-                await Clients.Group(lobby.Id.ToString()).OnUserLeft(user);
+                await Clients.Group(lobby.Id.ToString()).OnUserLeft(user, lobby.Id);
             }
 
             await Clients.All.OnUserDisconnected(user);
@@ -63,7 +63,7 @@ public class LobbyHub : Hub<ILobbyHubClient>
             return;
 
         await Groups.AddToGroupAsync(Context.ConnectionId, lobbyId.ToString());
-        await Clients.Group(lobbyId.ToString()).OnUserJoined(user);
+        await Clients.Group(lobbyId.ToString()).OnUserJoined(user, lobbyId);
     }
 
     public async Task LeaveLobby(Guid lobbyId)
@@ -75,7 +75,7 @@ public class LobbyHub : Hub<ILobbyHubClient>
 
         lobby.RemoveUser(user);
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, lobbyId.ToString());
-        await Clients.Group(lobbyId.ToString()).OnUserLeft(user);
+        await Clients.Group(lobbyId.ToString()).OnUserLeft(user, lobbyId);
     }
 
     public async Task CreateLobby(string lobbyName)

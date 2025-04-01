@@ -8,7 +8,7 @@ export default defineConfig({
         proxy: {
             // Only proxy requests that start with /lobbies
             '/lobbies': {
-                target: 'http://localhost:5000', // Your backend URL
+                target: 'http://localhost:5062', // Your backend URL
                 changeOrigin: true, // Important for virtual hosted sites (and often needed)
                 secure: false,      // Keep false if backend target is HTTP or uses self-signed HTTPS cert
             },

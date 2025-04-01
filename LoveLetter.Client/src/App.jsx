@@ -4,7 +4,7 @@ import './App.css';
 
 // --- Configuration ---
 // Base URL
-const backendBaseUrl = "http://localhost:5000"; 
+const backendBaseUrl = "http://localhost:5062"; 
 const lobbyHubUrl = `${backendBaseUrl}/lobbyhub`;
 const lobbiesApiUrl = `${backendBaseUrl}/lobbies`; // For initial fetch
 
